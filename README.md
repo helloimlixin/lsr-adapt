@@ -1,4 +1,4 @@
-# LoRA and LSR Fine-Tuning with Hydra
+# LoRA and LSR Fine-Tuning
 
 This project demonstrates parameter-efficient fine-tuning of transformer models using both Low-Rank Adaptation (LoRA) and Low-Rank Structured Reparameterization (LSR) with Hydra configuration management for better experiment tracking.
 
