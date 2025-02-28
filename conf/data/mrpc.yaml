@@ -1,0 +1,8 @@
+# @package _group_
+
+# Dataset configuration for MRPC
+name: "mrpc"  # Microsoft Research Paraphrase Corpus
+max_length: 128  # Maximum sequence length for tokenization
+preprocessing:
+  batch_size: 1000  # Batch size for dataset preprocessing (for efficiency)
+  num_proc: 4  # Number of processes for parallel preprocessing

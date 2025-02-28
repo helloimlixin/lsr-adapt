@@ -1,0 +1,16 @@
+# @package _group_
+
+# Model configuration for RoBERTa with LoRA
+name: "roberta-lora"
+base_model: "roberta-base"
+num_labels: 2  # Binary classification for MRPC
+
+# LoRA configuration
+lora:
+  r: 8  # Rank of the low-rank matrices
+  alpha: 32  # Scaling factor
+  target_modules: ["query", "value"]  # Which modules to apply LoRA to
+  # Alternative target options:
+  # - ["query", "value", "key"]  # Include key projection
+  # - ["query", "value", "key", "output"]  # All attention projections
+  # - ["attention", "output"]  # Target whole attention modules and outputs
