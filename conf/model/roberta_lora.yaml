@@ -1,9 +1,11 @@
-# @package _group_
+# @package model
+# Configuration for RoBERTa with LoRA
 
-# Model configuration for RoBERTa with LoRA
+# Model configuration
 name: "roberta-lora"
 base_model: "roberta-base"
 num_labels: 2  # Binary classification for MRPC
+adaptation_type: "lora"  # Identifies this as LoRA vs. "lsr"
 
 # LoRA configuration
 lora:

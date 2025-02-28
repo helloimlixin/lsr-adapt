@@ -1,6 +1,6 @@
-# @package _group_
-
 # Training configuration for LoRA fine-tuning
+#@package training
+
 evaluation_strategy: "epoch"  # Evaluate at the end of each epoch
 save_strategy: "epoch"  # Save at the end of each epoch
 num_train_epochs: 20  # Total number of training epochs

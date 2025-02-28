@@ -33,7 +33,7 @@ def tokenize_function(examples, tokenizer, max_length=128):
     """
     # Handle sentence pairs (e.g., for MRPC, MNLI, QQP)
     if "sentence2" in examples:
-        return tokenizer(
+        result = tokenizer(
             examples["sentence1"],
             examples["sentence2"],
             truncation=True,
@@ -42,12 +42,16 @@ def tokenize_function(examples, tokenizer, max_length=128):
         )
     # Handle single sentences (e.g., for SST-2)
     else:
-        return tokenizer(
+        result = tokenizer(
             examples["sentence"],
             truncation=True,
             padding="max_length",
             max_length=max_length,
         )
+
+    # Make sure we don't modify the original label
+    # This preserves the labels for the Trainer to use
+    return result
 
 
 def prepare_dataset(dataset_name, tokenizer, max_length=128, batch_size=None):
@@ -76,11 +80,14 @@ def prepare_dataset(dataset_name, tokenizer, max_length=128, batch_size=None):
         return tokenize_function(examples, tokenizer, max_length)
 
     # Apply tokenization with batching for efficiency
+    # Identify text columns to remove, but keep the label column
+    text_columns = [col for col in dataset["train"].column_names if col != "label"]
+
     tokenized_datasets = dataset.map(
         _tokenize,
         batched=True,
         batch_size=batch_size,
-        remove_columns=dataset["train"].column_names,  # Remove raw text columns
+        remove_columns=text_columns,  # Keep the label column
         desc=f"Tokenizing {dataset_name} dataset",
     )
 

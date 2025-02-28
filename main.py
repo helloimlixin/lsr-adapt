@@ -23,12 +23,33 @@ from src.models.lora import load_lora_model
 from src.data.dataset import prepare_dataset
 from src.training.trainer import setup_trainer
 
-# Configure logging
+# Configure basic logging initially
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+
+def setup_logging(output_dir):
+    """Set up file-based logging in addition to console logging"""
+    log_dir = Path(output_dir) / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+
+    # Create a file handler for the log file
+    log_file = log_dir / "training.log"
+    file_handler = logging.FileHandler(log_file)
+    file_handler.setLevel(logging.INFO)
+
+    # Create a formatter and add it to the handler
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    file_handler.setFormatter(formatter)
+
+    # Add the handler to the logger
+    root_logger = logging.getLogger()
+    root_logger.addHandler(file_handler)
+
+    logger.info(f"Logging to: {log_file}")
 
 
 @hydra.main(config_path="conf", config_name="config", version_base=None)
@@ -57,19 +78,41 @@ def main(cfg: DictConfig):
     output_dir.mkdir(parents=True, exist_ok=True)
     logger.info(f"Output directory: {output_dir}")
 
+    # Set up logging to file
+    setup_logging(output_dir)
+
+    # Create a simplified configuration for saving (to avoid interpolation issues)
+    config_to_save = OmegaConf.create(OmegaConf.to_container(cfg, resolve=True))
+
     # Save the configuration for reproducibility
     with open(output_dir / "config.yaml", "w") as f:
-        f.write(OmegaConf.to_yaml(cfg))
+        f.write(OmegaConf.to_yaml(config_to_save))
 
-    # Load model and tokenizer with LoRA applied
-    logger.info(f"Loading model {cfg.model.base_model} with LoRA (r={cfg.model.lora.r})")
-    model, tokenizer = load_lora_model(
-        model_name=cfg.model.base_model,
-        num_labels=cfg.model.num_labels,
-        target_names=cfg.model.lora.target_modules,
-        r=cfg.model.lora.r,
-        lora_alpha=cfg.model.lora.alpha
-    )
+    # Load model and tokenizer with appropriate adaptation method
+    logger.info(f"Loading model {cfg.model.base_model} with adaptation type: {cfg.model.adaptation_type}")
+
+    if hasattr(cfg.model, 'adaptation_type') and cfg.model.adaptation_type == "lsr":
+        from src.models.lsr import load_lsr_model
+        model, tokenizer = load_lsr_model(
+            model_name=cfg.model.base_model,
+            num_labels=cfg.model.num_labels,
+            target_names=cfg.model.lsr.target_modules,
+            r=cfg.model.lsr.r,
+            lora_alpha=cfg.model.lsr.alpha,
+            num_terms=cfg.model.lsr.num_terms,
+            factor_a=cfg.model.lsr.factor_a,
+            factor_b=cfg.model.lsr.factor_b
+        )
+    else:
+        # Default to LoRA
+        from src.models.lora import load_lora_model
+        model, tokenizer = load_lora_model(
+            model_name=cfg.model.base_model,
+            num_labels=cfg.model.num_labels,
+            target_names=cfg.model.lora.target_modules,
+            r=cfg.model.lora.r,
+            lora_alpha=cfg.model.lora.alpha
+        )
 
     # Prepare dataset
     logger.info(f"Preparing {cfg.data.name} dataset")

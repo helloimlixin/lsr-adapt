@@ -1,6 +1,7 @@
-# @package _group_
-
 # Dataset configuration for MRPC
+# Using @package data to ensure everything is under the data namespace
+#@package data
+
 name: "mrpc"  # Microsoft Research Paraphrase Corpus
 max_length: 128  # Maximum sequence length for tokenization
 preprocessing:

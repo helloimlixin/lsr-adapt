@@ -23,7 +23,7 @@ def get_training_args(cfg):
     # Create training arguments
     training_args = TrainingArguments(
         output_dir=output_dir,
-        evaluation_strategy=train_cfg.evaluation_strategy,
+        eval_strategy=train_cfg.evaluation_strategy,
         save_strategy=train_cfg.save_strategy,
         num_train_epochs=train_cfg.num_train_epochs,
         per_device_train_batch_size=train_cfg.per_device_train_batch_size,

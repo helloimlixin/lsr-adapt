@@ -1,0 +1,17 @@
+# @package model
+# Configuration for RoBERTa with LSR (Low-Rank Structured Reparameterization)
+
+# Model configuration
+name: "roberta-lsr"
+base_model: "roberta-base"
+num_labels: 2  # Binary classification for MRPC
+
+# LSR-specific configuration
+adaptation_type: "lsr"  # Identifies this as LSR vs. "lora"
+lsr:
+  r: 2  # Rank of the low-rank matrices (can be much smaller than LoRA due to Kronecker structure)
+  alpha: 8192  # Scaling factor (typically higher than LoRA)
+  target_modules: ["query", "value"]  # Which modules to apply LSR to
+  num_terms: 16  # Number of Kronecker product terms
+  factor_a: 32  # First factor for dimensions (32 × 24 = 768)
+  factor_b: 24  # Second factor for dimensions

@@ -1,14 +1,18 @@
-# @package _global_
-
-# Main configuration file that imports all sub-configurations
+# Main configuration file
 defaults:
   - model: roberta_lora
   - data: mrpc
   - training: lora_training
   - _self_
 
-# Output directory (uses interpolation for dynamic naming)
-output_dir: "./outputs/${model.name}_${data.name}_${now:%Y-%m-%d_%H-%M-%S}"
+# Create a simpler experiment name
+experiment_name: "roberta-lora-mrpc"
+
+# Base directory for all outputs (models, logs, etc.)
+base_dir: "./outputs"
+
+# Actual output directory for model checkpoints and results
+output_dir: "${base_dir}/${experiment_name}"
 
 # Debugging flag
 debug: false
@@ -18,14 +22,16 @@ seed: 42
 
 # Hydra-specific configuration
 hydra:
-  job:
-    chdir: true  # Change working directory to output directory
+  # Change Hydra's own output directory to avoid path conflicts
   run:
-    dir: ${output_dir}/hydra_logs
+    # Place Hydra logs in a separate directory to avoid path conflicts
+    dir: "${base_dir}/hydra_logs/${experiment_name}/${now:%Y-%m-%d_%H-%M-%S}"
+
+  # For multi-run experiments (parameter sweeps)
   sweep:
-    dir: multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    dir: "${base_dir}/multirun/${now:%Y-%m-%d}"
     subdir: ${hydra.job.num}
-  job_logging:
-    handlers:
-      file:
-        filename: ${hydra.run.dir}/hydra.log
+
+  # Don't change working directory to avoid path confusion
+  job:
+    chdir: false
